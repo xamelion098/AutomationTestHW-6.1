@@ -1,17 +1,23 @@
-image: Ubuntu2004  # образ для сборки
-
-stack: jdk 11  # версия JDK
-
-branches:
-  only:
-    - master  # ветка git
-
-build: off  # будем использовать свой скрипт сборки
+version: 1.0.0
+environment:
+  matrix:
+    - JAVA_VERSION: 8 # Или нужная версия Java
+      BROWSER: chrome # Или firefox, edge и т.д.
 
 install:
-  # запускаем SUT (& означает, что в фоновом режиме не блокируем терминал для запуска тестов)
-  - java -jar ./artifacts/app-ibank-build-for-testers.jar &
-  - chmod +x gradlew
+  - ps: Install-Product -Name Chocolatey
+  - choco install chromedriver -version 114.0.5735.90  # Или нужная версия ChromeDriver.  Подберите версию
+    #под вашу версию Chrome.  Проверьте в документации Appveyor
+    # и Selenium
+  - ps: Set-EnvironmentVariable -Name CHROME_DRIVER -Value "C:\Program Files\ChromeDriver\chromedriver.exe"
+  # (или путь к chromedriver  после установки через Chocolatey)
 
-build_script:
-  - ./gradlew test --info -Dselenide.headless=true
+build: off # Не нужна отдельная фаза сборки
+
+test:
+  -Name URL_SITE -Value "https://only.digital/" 
+
+# Важно! Замените:
+# - ".;path\to\junit\jar;path\to\selenium\jar;path\to\selenide\jar"   на правильный classpath,
+#   соответствующий структуре вашего проекта.
+# -  org.junit.runner.JUnitCore YourTestClass на имя вашего класса теста
